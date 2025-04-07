@@ -150,7 +150,7 @@ impl NVRC {
         chown("/var/run/nvidia-persistenced", Some(uid), Some(gid)).unwrap();
 
         let command = "/bin/nvidia-persistenced";
-        let args = ["--verbose", uvm_persistence_mode, "-u", u, "-g", g];
+        let args = ["--verbose", uvm_persistence_mode];
 
         match mode {
             Action::Start => self.start(&Name::Persistenced, command, &args),
