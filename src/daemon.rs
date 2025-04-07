@@ -206,4 +206,13 @@ impl NVRC {
         ];
         foreground(command, &args)
     }
+
+    pub fn syslogd(&self) {
+        let command = "/bin/syslogd";
+        let args = [];
+
+        if Path::new(command).exists() {
+            let _ = background(command, &args);
+        }
+    }
 }

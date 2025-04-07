@@ -118,6 +118,7 @@ impl NVRC {
     }
 
     fn setup_gpu(&mut self) {
+        self.syslogd();
         self.query_gpu_cc_mode().unwrap();
         self.check_gpu_supported(None).unwrap();
         // If we're running in a confidential environment we may need to set
