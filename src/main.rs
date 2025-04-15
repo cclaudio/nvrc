@@ -119,7 +119,6 @@ impl NVRC {
 
     fn setup_gpu(&mut self) {
         self.syslogd();
-        self.query_gpu_cc_mode().unwrap();
         self.check_gpu_supported(None).unwrap();
         // If we're running in a confidential environment we may need to set
         // specific kernel module parameters. Check those first and then load
@@ -136,6 +135,7 @@ impl NVRC {
         // we're starting the DCGM exporter
         self.nv_hostengine(Action::Restart).unwrap();
         self.dcgm_exporter(Action::Restart).unwrap();
+        self.nvidia_smi_cc_feature().unwrap();
         // If user has enabled nvidia_smi_srs in the kernel command line
         // we can optionally set the GPU to Ready
         self.nvidia_smi_srs().unwrap();

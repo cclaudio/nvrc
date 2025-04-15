@@ -193,6 +193,61 @@ impl NVRC {
         Ok(())
     }
 
+    pub fn nvidia_smi_cc_feature(&mut self) -> Result<()> {
+        let mut mode: Option<String> = None;
+
+        if self.gpu_bdfs.is_empty() {
+            debug!("No GPUs found, skipping CC mode query");
+            return Ok(());
+        }
+
+        for bdf in &self.gpu_bdfs {
+            let output = Command::new("/bin/nvidia-smi")
+                .args([
+                    "conf-compute",
+                    "-f",
+                    "-i",
+                    bdf,
+                ])
+                .output()
+                .with_context(|| format!("Failed to execute nvidia-smi BDF: {}", bdf))?;
+
+            let combined_output = format!(
+                "{}{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+
+            debug!("{}", combined_output);
+
+            if !output.status.success() {
+                error!("nvidia-smi BDF {} exited with status: {}", bdf, output.status);
+            }
+
+            let current_mode = if combined_output.contains("CC status: ON") {
+                "on".to_string()
+            } else {
+                "off".to_string()
+            };
+
+            match &mode {
+                Some(m) if m != &current_mode => {
+                    return Err(anyhow::anyhow!(
+                        "Inconsistent CC mode detected: {} has mode '{}', expected '{}'",
+                        bdf,
+                        current_mode,
+                        m
+                    ));
+                }
+                _ => mode = Some(current_mode),
+            }
+        }
+        debug!("CC mode is: {}", mode.as_ref().unwrap());
+        self.gpu_cc_mode = mode;
+
+        Ok(())
+    }
+
     pub fn nvidia_smi_srs(&self) -> Result<()> {
         if self.gpu_cc_mode != Some("on".to_string()) {
             debug!("CC mode is off, skipping nvidia-smi conf-compute -srs");
