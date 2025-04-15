@@ -31,6 +31,10 @@ impl NVRC {
 
             debug!("{}", combined_output);
 
+            if !output.status.success() {
+                error!("nvidia_gpu_tools BDF {} exited with status: {}", bdf, output.status);
+            }
+
             let current_mode = if combined_output.contains("CC mode is on") {
                 "on".to_string()
             } else {
